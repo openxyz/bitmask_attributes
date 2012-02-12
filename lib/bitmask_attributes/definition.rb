@@ -51,9 +51,6 @@ module BitmaskAttributes
             @#{attribute}.size == 1 ?  @#{attribute}.first  : @#{attribute}
           end
 
-          def #{attribute}_array            
-            @#{attribute}_array ||= BitmaskAttributes::ValueProxy.new(self, :#{attribute}, &self.class.bitmask_definitions[:#{attribute}].extension)
-          end
         )
       end
     
@@ -61,7 +58,7 @@ module BitmaskAttributes
         model.class_eval %(
           def #{attribute}=(raw_value)
             values = raw_value.kind_of?(Array) ? raw_value : [raw_value]
-            self.#{attribute}_array.replace(values.reject(&:blank?))
+            @#{attribute}.replace(values.reject(&:blank?))
           end
         )
       end
