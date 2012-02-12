@@ -48,9 +48,7 @@ module BitmaskAttributes
         model.class_eval %(
           def #{attribute}
             @#{attribute} ||= BitmaskAttributes::ValueProxy.new(self, :#{attribute}, &self.class.bitmask_definitions[:#{attribute}].extension)
-            @#{attribute}.size == 1 ?  @#{attribute}.first  : @#{attribute}
           end
-
         )
       end
     
@@ -58,7 +56,7 @@ module BitmaskAttributes
         model.class_eval %(
           def #{attribute}=(raw_value)
             values = raw_value.kind_of?(Array) ? raw_value : [raw_value]
-            @#{attribute}.replace(values.reject(&:blank?))
+            self.#{attribute}.replace(values.reject(&:blank?))
           end
         )
       end
@@ -67,13 +65,8 @@ module BitmaskAttributes
       def create_attribute_methods_on(model)
         model.class_eval %(
           def self.values_for_#{attribute}      # def self.values_for_numbers
-            #{values}                           #   [:one, :two, :three]
+            #{values.inspect}                   #   [:one, :two, :three]
           end                                   # end
-          def self.values_with_bitmask_for_#{attribute}  
-            #{values}.map do |value|
-              [value, bitmasks[:#{attribute}][value]   ]
-            end                           #   [[:one,1], [:two,2], [:three,4]]
-          end          
         )
       end
     
@@ -102,10 +95,10 @@ module BitmaskAttributes
           def #{attribute}?(*values)
             if !values.blank?
               values.all? do |value|
-                self.#{attribute}_array.include?(value)
+                self.#{attribute}.include?(value)
               end
             else
-              self.#{attribute}_array.present?
+              self.#{attribute}.present?
             end
           end
         )
@@ -135,7 +128,7 @@ module BitmaskAttributes
               end              
               }                    
           
-          scope :no_#{attribute}, where("#{attribute} = 0 OR #{attribute} IS NULL")
+          scope :no_#{attribute}, proc { where("#{attribute} = 0 OR #{attribute} IS NULL") }
           
           scope :with_any_#{attribute},
             proc { |*values|
@@ -153,9 +146,10 @@ module BitmaskAttributes
         values.each do |value|
           model.class_eval %(
             scope :#{attribute}_for_#{value},
-                  where('#{attribute} & ? <> 0', #{model}.bitmask_for_#{attribute}(:#{value}))
+                  proc { where('#{attribute} & ? <> 0', #{model}.bitmask_for_#{attribute}(:#{value})) }
           )
         end      
       end
   end
 end
+
