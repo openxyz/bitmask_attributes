@@ -9,7 +9,6 @@ module BitmaskAttributes
     end
     
     def install_on(model)
-      debugger
       #validate_for model
       #generate_bitmasks_on model
       override model
@@ -48,7 +47,7 @@ module BitmaskAttributes
       def override_getter_on(model)
         model.class_eval %(
           def #{attribute}            
-            @#{attribute} ||= self.class.bitmask_definitions[:#{attribute}][( self[:#{attribute}] || -1)]
+            @#{attribute} ||= self.class.bitmask_definitions[:#{attribute}].values[( self[:#{attribute}] || -1)]
           end
         )
       end
@@ -56,7 +55,7 @@ module BitmaskAttributes
       def override_setter_on(model)
         model.class_eval %(
           def #{attribute}=(raw_value)            
-            @#{attribute} = self.class.bitmask_definitions[:#{attribute}].find_index(raw_value )
+            self[:#{attribute}] = self.class.bitmask_definitions[:#{attribute}].values.find_index(raw_value) || -1
           end
         )
       end
@@ -64,9 +63,9 @@ module BitmaskAttributes
       # Returns the defined values as an Array.
       def create_attribute_methods_on(model)
         model.class_eval %(
-          def self.values_for_#{attribute}      # def self.values_for_numbers
-            #{values}                           #   [:one, :two, :three]
-          end                                   # end
+          def self.values_for_#{attribute}      
+            self.class.bitmask_definitions[:#{attribute}].values                   
+          end                                   
         )
       end
     
