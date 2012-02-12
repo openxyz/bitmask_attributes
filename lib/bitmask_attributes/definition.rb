@@ -52,8 +52,7 @@ module BitmaskAttributes
           end
 
           def #{attribute}_array            
-            self.#{attribute}
-            @#{attribute}
+            @#{attribute}_array ||= BitmaskAttributes::ValueProxy.new(self, :#{attribute}, &self.class.bitmask_definitions[:#{attribute}].extension)
           end
         )
       end
