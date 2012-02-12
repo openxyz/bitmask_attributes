@@ -1,3 +1,7 @@
+require 'bitmask_attributes/definition'
+require 'bitmask_attributes/value_proxy'
+require 'bitmask_attributes/indexmask'        
+
 module BitmaskAttributes
   extend ActiveSupport::Concern
 
@@ -7,11 +11,9 @@ module BitmaskAttributes
         raise ArgumentError, "Must provide an Array :as option"
       end
       if options[:multi] 
-        require 'bitmask_attributes/definition'
-        require 'bitmask_attributes/value_proxy'
         bitmask_definitions[attribute] = Definition.new(attribute, options[:as].to_a, &extension)
       else
-        require 'bitmask_attributes/indexmask'
+
         bitmask_definitions[attribute] = DefinitionForIndex.new(attribute, option      
       end
       bitmask_definitions[attribute].install_on(self)      
