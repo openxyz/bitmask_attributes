@@ -1,6 +1,6 @@
 require 'bitmask_attributes/definition'
 require 'bitmask_attributes/value_proxy'
-require 'bitmask_attributes/indexmask'        
+require 'bitmask_attributes/definition_for_index'        
 
 module BitmaskAttributes
   extend ActiveSupport::Concern
