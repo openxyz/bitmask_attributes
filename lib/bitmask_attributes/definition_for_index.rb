@@ -64,7 +64,7 @@ module BitmaskAttributes
       def create_attribute_methods_on(model)
         model.class_eval %(
           def self.values_for_#{attribute}      
-            self.class.bitmask_definitions[:#{attribute}].values                   
+            self.bitmask_definitions[:#{attribute}].values                   
           end                                   
         )
       end
