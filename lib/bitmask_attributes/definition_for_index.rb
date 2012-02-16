@@ -14,7 +14,7 @@ module BitmaskAttributes
       override model
       #create_convenience_class_method_on model
       #create_convenience_instance_methods_on model
-      #create_scopes_on model
+      create_scopes_on model
       create_attribute_methods_on model
     end
     
@@ -104,50 +104,27 @@ module BitmaskAttributes
       end
     
       def create_scopes_on(model)
-        model.class_eval %(
+        model.class_eval %(        
           scope :with_#{attribute},
-            proc { |*values|
-              if values.blank?
-                where('#{attribute} > 0 OR #{attribute} IS NOT NULL')
+            proc { |value| 
+              if value
+                mask = self.bitmask_definitions[:#{attribute}].values.find_index(value)
+                where('#{attribute} =  ?', mask )
               else
-                sets = values.map do |value|
-                  mask = #{model}.bitmask_for_#{attribute}(value)
-                  "#{attribute} & \#{mask} <> 0"
-                end
-                where(sets.join(' AND '))
-              end
-            }
+                where("#{attribute} >= 0 ")
+              end              
+            }                    
+       
           scope :without_#{attribute}, 
             proc { |value| 
               if value
-                mask = #{model}.bitmask_for_#{attribute}(value)
-                where("#{attribute} IS NULL OR #{attribute} & ? = 0", mask)
+                mask = self.bitmask_definitions[:#{attribute}].values.find_index(value)
+                where('#{attribute} <>  ?', mask )
               else
-                where("#{attribute} IS NULL OR #{attribute} = 0")
+                where("#{attribute} IS NULL OR #{attribute} < 0 ")
               end              
-              }                    
-          
-          scope :no_#{attribute}, where("#{attribute} = 0 OR #{attribute} IS NULL")
-          
-          scope :with_any_#{attribute},
-            proc { |*values|
-              if values.blank?
-                where('#{attribute} > 0 OR #{attribute} IS NOT NULL')
-              else
-                sets = values.map do |value|
-                  mask = #{model}.bitmask_for_#{attribute}(value)
-                  "#{attribute} & \#{mask} <> 0"
-                end
-                where(sets.join(' OR '))
-              end
             }
-        )
-        values.each do |value|
-          model.class_eval %(
-            scope :#{attribute}_for_#{value},
-                  where('#{attribute} & ? <> 0', #{model}.bitmask_for_#{attribute}(:#{value}))
-          )
-        end      
+        end
       end
-  end
+    end
 end
