@@ -65,7 +65,12 @@ module BitmaskAttributes
         model.class_eval %(
           def self.values_for_#{attribute}      
             self.bitmask_definitions[:#{attribute}].values                   
-          end                                   
+          end
+          def self.values_with_bitmask_for_#{attribute}      
+            ret = []
+            self.bitmask_definitions[:#{attribute}].values.each_with_index{|v,k| ret.push [v,k]}
+            ret
+          end                                          
         )
       end
     
