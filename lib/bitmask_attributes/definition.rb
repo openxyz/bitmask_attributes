@@ -67,6 +67,11 @@ module BitmaskAttributes
           def self.values_for_#{attribute}      # def self.values_for_numbers
             #{values.inspect}                   #   [:one, :two, :three]
           end                                   # end
+          def self.values_with_bitmask_for_#{attribute}  
+            #{values}.map do |value|
+              [value, bitmasks[:#{attribute}][value]   ]
+            end                           
+          end             
         )
       end
     
