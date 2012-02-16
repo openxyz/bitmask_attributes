@@ -123,8 +123,8 @@ module BitmaskAttributes
               else
                 where("#{attribute} IS NULL OR #{attribute} < 0 ")
               end              
-            }
-        end
+            }        
+        )
       end
     end
 end
