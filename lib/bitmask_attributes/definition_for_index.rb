@@ -47,7 +47,7 @@ module BitmaskAttributes
       def override_getter_on(model)
         model.class_eval %(
           def #{attribute}            
-            @#{attribute} ||= self.class.bitmask_definitions[:#{attribute}].values[( self[:#{attribute}] || -1)]
+            @#{attribute} ||= self.class.bitmask_definitions[:#{attribute}].values[( self[:#{attribute}] || 0)]
           end
         )
       end
@@ -55,7 +55,7 @@ module BitmaskAttributes
       def override_setter_on(model)
         model.class_eval %(
           def #{attribute}=(raw_value)            
-            self[:#{attribute}] = self.class.bitmask_definitions[:#{attribute}].values.find_index(raw_value) || -1
+            self[:#{attribute}] = self.class.bitmask_definitions[:#{attribute}].values.find_index(raw_value) || 0
           end
         )
       end
