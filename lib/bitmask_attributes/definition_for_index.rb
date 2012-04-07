@@ -54,8 +54,13 @@ module BitmaskAttributes
     
       def override_setter_on(model)
         model.class_eval %(
-          def #{attribute}=(raw_value)            
-            self[:#{attribute}] = self.class.bitmask_definitions[:#{attribute}].values.find_index(raw_value) || -1
+          def #{attribute}=(raw_value)
+            if raw_value.kind_of?(Integer) then
+              self[:#{attribute}] = raw_value.between?(0,self.class.bitmask_definitions[:#{attribute}].values.size - 1) ? raw_value : -1
+            else
+              self[:#{attribute}] = self.class.bitmask_definitions[:#{attribute}].values.find_index(raw_value) || -1            
+            end
+
           end
         )
       end
@@ -115,7 +120,7 @@ module BitmaskAttributes
           scope :with_#{attribute},
             proc { |value| 
               if value
-                mask = self.bitmask_definitions[:#{attribute}].values.find_index(value)
+                mask = value.kind_of?(Integer) ? value : self.bitmask_definitions[:#{attribute}].values.find_index(value)
                 where('#{attribute} =  ?', mask )
               else
                 where("#{attribute} >= 0 ")
@@ -125,7 +130,7 @@ module BitmaskAttributes
           scope :without_#{attribute}, 
             proc { |value| 
               if value
-                mask = self.bitmask_definitions[:#{attribute}].values.find_index(value)
+                mask = value.kind_of?(Integer) ? value : self.bitmask_definitions[:#{attribute}].values.find_index(value)
                 where('#{attribute} <>  ?', mask )
               else
                 where("#{attribute} IS NULL OR #{attribute} < 0 ")
