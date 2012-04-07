@@ -120,7 +120,7 @@ module BitmaskAttributes
           scope :with_#{attribute},
             proc { |value| 
               if value
-                mask = value.match(/^\d+$/) ? value.to_i : self.bitmask_definitions[:#{attribute}].values.find_index(value)
+                mask = value.kind_of?(Integer) ? value : self.bitmask_definitions[:#{attribute}].values.find_index(value)
                 where('#{attribute} =  ?', mask )
               else
                 where("#{attribute} >= 0 ")
@@ -130,7 +130,7 @@ module BitmaskAttributes
           scope :without_#{attribute}, 
             proc { |value| 
               if value
-                mask = value.match(/^\d+$/)  ? value.to_i : self.bitmask_definitions[:#{attribute}].values.find_index(value)
+                mask = value.kind_of?(Integer)  ? value : self.bitmask_definitions[:#{attribute}].values.find_index(value)
                 where('#{attribute} <>  ?', mask )
               else
                 where("#{attribute} IS NULL OR #{attribute} < 0 ")
