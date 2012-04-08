@@ -13,7 +13,7 @@ module BitmaskAttributes
       generate_bitmasks_on model
       override model
       create_convenience_class_method_on model
-      create_convenience_instance_methods_on model
+      #create_convenience_instance_methods_on model
       create_scopes_on model
       create_attribute_methods_on model
     end
