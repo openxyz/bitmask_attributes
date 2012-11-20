@@ -49,17 +49,16 @@ module BitmaskAttributes
         )
       end
 
+      # raw_value.kind_of?(Integer) && raw_value.between?(0,definition.values.size - 1)
       def override_setter_on(model)
         model.class_eval %(
           def #{attribute}=(raw_value)
             definition = self.class.bitmask_definitions[:#{attribute}]
-            if raw_value.kind_of?(Integer) && raw_value.between?(0,definition.values.size - 1) then
-              temp = raw_value
-            else
-              temp = definition.values.find_index(raw_value)
+            if raw_value_index = definition.values.find_index(raw_value)
+              @#{attribute} = raw_value
+              self[:#{attribute}] = raw_value_index
             end
-            self[:#{attribute}] = temp if temp
-            #{attribute}
+            @#{attribute}
           end
         )
       end
