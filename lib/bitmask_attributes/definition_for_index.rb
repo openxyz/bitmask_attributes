@@ -1,3 +1,4 @@
+#encoding: utf-8
 module BitmaskAttributes
   class DefinitionForIndex
     attr_reader :attribute, :values,:default,:default_raw, :extension
@@ -31,21 +32,14 @@ module BitmaskAttributes
       def override_getter_on(model)
         model.class_eval %(
           def #{attribute}
-            unless @#{attribute} then
-              definition = self.class.bitmask_definitions[:#{attribute}]
-              if self[:#{attribute}]  then
+            @#{attribute} ||  
+              if self[:#{attribute}] then
+                definition = self.class.bitmask_definitions[:#{attribute}]
                 @#{attribute} = definition.values[self[:#{attribute}]]
               else
-                @#{attribute} =  definition.default
+                @#{attribute} =  '#{default}' if '#{default}'.present?
               end
-            end
-            @#{attribute}
           end
-
-          before_create do |m|
-            self[:#{attribute}] ||= self.class.bitmask_definitions[:#{attribute}].default_raw
-          end
-
         )
       end
 
@@ -61,6 +55,15 @@ module BitmaskAttributes
             @#{attribute}
           end
         )
+
+        if default.present? then
+          model.class_eval %(
+            before_save do |m|
+              self[:#{attribute}] ||= '#{default_raw}'
+            end
+          )
+        end
+
       end
 
       # Returns the defined values as an Array.

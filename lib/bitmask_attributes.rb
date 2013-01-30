@@ -20,7 +20,7 @@ module BitmaskAttributes
           raise ArgumentError, "Must provide an Array :as option"
         end
         # must be unique, and Array.size < 99 and values must be same type?
-        if not options[:default].nil? then
+        if options[:default].present? then
           unless options[:default_raw] = options[:as].find_index(options[:default])
             raise ArgumentError, "default value #{options[:default]} is wrong value"
           end
