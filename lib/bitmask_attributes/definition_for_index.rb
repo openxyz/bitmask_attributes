@@ -56,10 +56,10 @@ module BitmaskAttributes
           end
         )
 
-        if default.present? then
+        if default_raw.present? then
           model.class_eval %(
             before_save do |m|
-              self[:#{attribute}] ||= '#{default_raw}'
+              self[:#{attribute}] ||= #{default_raw}
             end
           )
         end
