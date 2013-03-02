@@ -10,13 +10,13 @@ module BitmaskAttributes
       if options[:multi] then
         bitmask_definitions[attribute] = Definition.new(attribute, options[:as], &extension)
       else
-        if defined?(Rails) && Rails.configuration.cache_classes || !model.table_exists?
+        if defined?(Rails) && Rails.configuration.cache_classes || !table_exists?
         else
           if not self.columns.detect { |col| col.name == attribute.to_s }
             raise ArgumentError, "`#{attribute}' is not an attribute of `#{self}'"
           end
         end  
-        
+
         if not options[:as].try(:kind_of?,Array)
           raise ArgumentError, "Must provide an Array :as option"
         end
