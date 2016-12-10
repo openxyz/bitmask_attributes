@@ -60,6 +60,7 @@ module BitmaskAttributes
           def #{attribute}
             @#{attribute} ||= BitmaskAttributes::ValueProxy.new(self, :#{attribute}, &self.class.bitmask_definitions[:#{attribute}].extension)
           end
+
           def reload_#{attribute}
             @#{attribute} = nil
           end
@@ -91,6 +92,24 @@ module BitmaskAttributes
           def self.values_for_#{attribute}      # def self.values_for_numbers
             #{values}                           #   [:one, :two, :three]
           end                                   # end
+
+          def self.text_for_#{attribute}
+            model_name = "#{model.name.underscore}"
+            self.values_for_#{attribute}.inject([]) do |ret,value|
+              key = value.to_s
+              lookup = "#{attribute}." << key
+              ret.push [ I18n.t( (model_name << '.' << lookup),scope:'enumerize',default:[("defaults." << lookup).to_sym,key]), value]
+              ret
+            end
+          end
+
+          def #{attribute}_text
+            self.class.text_for_#{attribute}.inject([]) do |ret,ary|
+              ret.push ary.first if self.#{attribute}.include?(ary.last)
+              ret
+            end
+          end
+
         )
       end
 
