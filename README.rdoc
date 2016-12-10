@@ -71,6 +71,10 @@ A couple useful named scopes are also generated when you use
     # => (all users who are BOTH editors and writers)
     User.with_any_roles(:editor, :writer)
     # => (all users who are editors OR writers)
+    User.with_exact_roles(:writer)
+    # => (all users who are ONLY writers)
+    User.with_exact_roles(:writer, :editor)
+    # => (all users who are BOTH editors and writers and nothing else)
 
 Find records without any bitmask set:
 
@@ -79,12 +83,16 @@ Find records without any bitmask set:
     User.no_roles
     # => (all users without a role)
 
-Find records without a specific attribute.
+Find records without specific attributes:
 
     User.without_roles(:editor)
     # => (all users who are not editors)
 
-Note that "without_" only supports a single attribute argument, and the "no_" method does not support arguments.
+    User.without_roles(:writer, :editor)
+    # => (all users who are NEITHER writers nor editors)
+
+Note that "without_" supports one or more attribute arguments, and the "no_" method does not support arguments.
+And "with_exact_" without arguments is alias for "no_"
 
 
 === Adding Methods
@@ -102,6 +110,58 @@ named scopes):
     user.other_attribute.worked?
     # => true
 
+=== Handling null values
+
+By default, bitmasks support the potential for the underlying integer value to be null. However, if you have created
+a field that is guaranteed never to be null, you can simplify the SQL query conditions by declaring ":null => false"
+in the definition:
+
+     bitmask :never_null_attributes,:as => [:value1, :value2], :null => false
+
+=== Allowing for a "zero" value
+
+It is common to use web forms to set bitmask bits using checkboxes. If the various bits each are represented by a
+checkbox and the user unchecks them all, the resulting "params" posted to the controller will be missing. When this
+happens, a controller will need to ensure that a "params" hash entry has an empty array or a call to "update_attributes"
+will not change the attribute. For example:
+
+    In model...
+        class SomeModel < ActiveRecord::Base
+            bitmask :some_attribute, :as => [:value1, :value2]
+        end
+
+    In view...
+        <input type="checkbox" name="some_model[some_attribute][]" value="value1"/>
+        <input type="checkbox" name="some_model[some_attribute][]" value="value2"/>
+
+    In controller...
+        def update
+            @some_model = SomeModel.find(params[:id])
+            params[:some_model][:some_attribute] ||= []
+            @some_model.update_attributes(params)
+        end
+
+As an alternative, you may provide a special symbol representing "zero":
+
+    In model...
+        class SomeModel < ActiveRecord::Base
+            bitmask :some_attribute, :as => [:value1, :value2], :zero_value => :none
+        end
+
+    In view...
+        <input type="checkbox" name="some_model[some_attribute][]" value="value1"/>
+        <input type="checkbox" name="some_model[some_attribute][]" value="value2"/>
+        <input type="hidden"   name="some_model[some_attribute][]" value="none"/>
+
+    In controller...
+        def update
+            @some_model = SomeModel.find(params[:id])
+            @some_model.update_attributes(params)
+        end
+
+This technique can be particularly useful for both forms and web services where setting the attribute in question may
+be optionally included or not such that the controller setting of an empty array in the first example would not be
+correct.
 
 === Warning: Modifying possible values
 

@@ -1,3 +1,3 @@
 module BitmaskAttributes
-  VERSION = "0.2.4".freeze
+  VERSION = "1.0.0".freeze
 end
